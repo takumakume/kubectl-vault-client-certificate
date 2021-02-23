@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -6,7 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopkg.in/yaml.v2"
+	"github.com/go-playground/validator"
+	"github.com/goccy/go-yaml"
 )
 
 type Config struct {
@@ -16,8 +17,8 @@ type Config struct {
 }
 
 type VaultServerConfig struct {
-	Name      string               `yaml:"name"`
-	Address   string               `yaml:"address"`
+	Name      string               `yaml:"name" validate:"required"`
+	Address   string               `yaml:"address" validate:"url,required"`
 	Namespace string               `yaml:"namespace,omitempty"`
 	TLS       VaultServerTLSConfig `yaml:"tls,omitempty"`
 }
@@ -26,18 +27,18 @@ type VaultServerTLSConfig struct {
 	Cert       string `yaml:"cert,omitempty"`
 	Key        string `yaml:"key,omitempty"`
 	CACert     string `yaml:"ca_cert,omitempty"`
-	SkipVerify bool   `yaml:"skip_verify"`
+	SkipVerify bool   `yaml:"skip_verify,omitempty"`
 }
 
 type VaultPKIConfig struct {
-	Name            string `yaml:"name"`
-	VaultServerName string `yaml:"vault_server_name"`
-	Path            string `yaml:"path"`
-	CommonName      string `yaml:"common_name"`
-	TTL             string `yaml:"ttl"`
+	Name            string `yaml:"name" validate:"required"`
+	VaultServerName string `yaml:"vault_server_name" validate:"required"`
+	Path            string `yaml:"path" validate:"required"`
+	CommonName      string `yaml:"common_name" validate:"required"`
+	TTL             string `yaml:"ttl" validate:"required"`
 }
 
-func defaultConfigPath() string {
+func DefaultConfigPath() string {
 	return fmt.Sprintf("%s/.kube/kubectl-vault-client-certificate/config", os.Getenv("HOME"))
 }
 
@@ -70,7 +71,7 @@ func initConfig(path string) error {
 	return nil
 }
 
-func newConfig(path string) (*Config, error) {
+func NewConfig(path string) (*Config, error) {
 	var cfg Config
 	if err := initConfig(path); err != nil {
 		return nil, err
@@ -90,7 +91,7 @@ func newConfig(path string) (*Config, error) {
 	return &cfg, nil
 }
 
-func (cfg *Config) getVaultServerConfig(name string) (*VaultServerConfig, error) {
+func (cfg *Config) GetVaultServerConfig(name string) (*VaultServerConfig, error) {
 	for _, a := range cfg.VaultServers {
 		if a.Name == name {
 			return &a, nil
@@ -101,10 +102,15 @@ func (cfg *Config) getVaultServerConfig(name string) (*VaultServerConfig, error)
 }
 
 func (cfg *Config) validateVaultServerConfig(vaultServerConfig VaultServerConfig) error {
+	v := validator.New()
+	if err := v.Struct(vaultServerConfig); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (cfg *Config) writeVaultServerConfig(vaultServerConfig VaultServerConfig) error {
+func (cfg *Config) WriteVaultServerConfig(vaultServerConfig VaultServerConfig) error {
 	if err := cfg.validateVaultServerConfig(vaultServerConfig); err != nil {
 		return err
 	}
@@ -127,7 +133,7 @@ func (cfg *Config) writeVaultServerConfig(vaultServerConfig VaultServerConfig) e
 	return nil
 }
 
-func (cfg *Config) getVaultPKIConfig(name string) (*VaultPKIConfig, error) {
+func (cfg *Config) GetVaultPKIConfig(name string) (*VaultPKIConfig, error) {
 	for _, a := range cfg.VaultPKIs {
 		if a.Name == name {
 			return &a, nil
@@ -138,7 +144,12 @@ func (cfg *Config) getVaultPKIConfig(name string) (*VaultPKIConfig, error) {
 }
 
 func (cfg *Config) validateVaultPKIConfig(vaultPKIConfig VaultPKIConfig) error {
-	_, err := cfg.getVaultServerConfig(vaultPKIConfig.VaultServerName)
+	v := validator.New()
+	if err := v.Struct(vaultPKIConfig); err != nil {
+		return err
+	}
+
+	_, err := cfg.GetVaultServerConfig(vaultPKIConfig.VaultServerName)
 	if err != nil {
 		return err
 	}
@@ -146,7 +157,7 @@ func (cfg *Config) validateVaultPKIConfig(vaultPKIConfig VaultPKIConfig) error {
 	return nil
 }
 
-func (cfg *Config) writeVaultPKIConfig(vaultPKIConfig VaultPKIConfig) error {
+func (cfg *Config) WriteVaultPKIConfig(vaultPKIConfig VaultPKIConfig) error {
 	if err := cfg.validateVaultPKIConfig(vaultPKIConfig); err != nil {
 		return err
 	}
@@ -179,5 +190,6 @@ func (cfg *Config) writeSelf() error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

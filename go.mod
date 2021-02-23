@@ -3,6 +3,8 @@ module github.com/takumakume/kubectl-vault-client-certificate
 go 1.15
 
 require (
+	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/goccy/go-yaml v1.8.8
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hashicorp/vault/sdk v0.1.13

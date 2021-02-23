@@ -1,4 +1,4 @@
-package main
+package printer
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ type printer struct {
 	stderr io.Writer
 }
 
-func newPrinter(stdout, stderr io.Writer) *printer {
+func NewPrinter(stdout, stderr io.Writer) *printer {
 	log.SetOutput(stderr)
 
 	table := tablewriter.NewWriter(stdout)
@@ -37,8 +37,8 @@ func newPrinter(stdout, stderr io.Writer) *printer {
 	}
 }
 
-func (p *printer) print(header []string, data [][]string, errors []error) error {
-	if err := p.validatePrintData(header, data); err != nil {
+func (p *printer) Print(header []string, data [][]string, errors []error) error {
+	if err := p.validatePrintHeaderAndData(header, data); err != nil {
 		return err
 	}
 
@@ -53,7 +53,18 @@ func (p *printer) print(header []string, data [][]string, errors []error) error 
 	return nil
 }
 
-func (p *printer) validatePrintData(header []string, data [][]string) error {
+func (p *printer) PrintNoHeader(data [][]string, errors []error) error {
+	p.table.AppendBulk(data)
+	p.table.Render()
+
+	for _, e := range errors {
+		log.Error(e)
+	}
+
+	return nil
+}
+
+func (p *printer) validatePrintHeaderAndData(header []string, data [][]string) error {
 	headrLen := len(header)
 	for i, d := range data {
 		if len(d) != headrLen {
