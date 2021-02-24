@@ -18,9 +18,14 @@ var (
 	argsIssuerName      string
 	argsVaultServerName string
 	argsVaultAddr       string
+	argsVaultNamespace  string
 	argsPath            string
 	argsCommonName      string
 	argsTTL             string
+	argsCert            string
+	argsKey             string
+	argsCACert          string
+	argsSkipVerify      bool
 )
 
 func Execute() {
