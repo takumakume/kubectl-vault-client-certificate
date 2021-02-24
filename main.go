@@ -1,6 +1,6 @@
 package main
 
-import "github.com/takumakume/kubectl-vault_client_certificate/cmd"
+import "github.com/takumakume/kubectl-vault-client-certificate/cmd"
 
 func main() {
 	cmd.Execute()
