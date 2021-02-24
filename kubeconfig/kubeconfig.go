@@ -30,6 +30,9 @@ func (k *Kubeconfig) ReadContext(name string) (*api.Context, error) {
 
 	obj, ok := rawConfig.Contexts[name]
 	if !ok {
+		return nil, fmt.Errorf("'%s' context can not read", name)
+	}
+	if obj == nil {
 		return nil, fmt.Errorf("'%s' context was nof found in your kubeconfig", name)
 	}
 
