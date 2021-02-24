@@ -1,4 +1,4 @@
 test:
 	go test ./...
 build:
-	go build -o bin/kubectl-vault-client-certificate
+	go build -o bin/kubectl-vault_client_certificate
