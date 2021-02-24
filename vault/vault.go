@@ -1,17 +1,17 @@
 package vault
 
 import (
+	"crypto/tls"
+
 	"github.com/hashicorp/vault/api"
-	"github.com/hashicorp/vault/sdk/helper/certutil"
 )
 
 type Vault struct {
 	client *api.Client
-	token  string
 }
 
-func NewVault(config *VaultConfig) (*Vault, error) {
-	client, err := api.NewClient(config.apiConfig)
+func New(cfg *VaultConfig) (*Vault, error) {
+	client, err := api.NewClient(cfg.apiConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -19,31 +19,43 @@ func NewVault(config *VaultConfig) (*Vault, error) {
 }
 
 func (v *Vault) SetToken(token string) {
-	v.token = token
+	v.client.SetToken(token)
 }
 
-func (v *Vault) CreateCertBundle(path string, certConfig *VaultCertConfig) (*certutil.CertBundle, error) {
+func (v *Vault) IssueNewCertificate(path, commonName, ttl string) (*api.Secret, error) {
 	data := map[string]interface{}{
-		"common_name":  certConfig.CommonName,
-		"organization": certConfig.Organization,
-		"alt_names":    certConfig.AltNames,
-		"ip_sans":      certConfig.IPSans,
-		"ttl":          certConfig.TTL,
+		"common_name": commonName,
+		"ttl":         ttl,
 	}
 
-	secret, err := v.create(path, data)
+	secret, err := v.client.Logical().Write(path, data)
 	if err != nil {
 		return nil, err
 	}
 
-	cert, err := certutil.ParsePKIMap(secret.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	return cert.ToCertBundle()
+	return secret, nil
 }
 
-func (v *Vault) create(path string, data map[string]interface{}) (*api.Secret, error) {
-	return v.client.Logical().Write(path, data)
+type CertificateBundle struct {
+	Certificate string
+	PrivateKey  string
+	IssuingCA   string
+}
+
+func SecretToCertificateBundle(secret *api.Secret) (CertificateBundle, error) {
+	var bundle CertificateBundle
+	cert := secret.Data["certificate"].(string)
+	key := secret.Data["private_key"].(string)
+	ca := secret.Data["issuing_ca"].(string)
+
+	_, err := tls.X509KeyPair([]byte(cert), []byte(key))
+	if err != nil {
+		return bundle, err
+	}
+
+	bundle.Certificate = cert
+	bundle.PrivateKey = key
+	bundle.IssuingCA = ca
+
+	return bundle, nil
 }

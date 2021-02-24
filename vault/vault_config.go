@@ -8,16 +8,24 @@ type VaultConfig struct {
 	apiConfig *api.Config
 }
 
-func NewVaultConfig(address, tls_ca, tls_cert, tls_key string, tls_insecure bool) (*VaultConfig, error) {
+type VaultConfigInput struct {
+	Address  string
+	CAPath   string
+	CertPath string
+	KeyPath  string
+	Insecure bool
+}
+
+func NewVaultConfig(cfg VaultConfigInput) (*VaultConfig, error) {
 	// https://github.com/hashicorp/vault/blob/master/api/client.go
 	config := api.DefaultConfig()
-	config.Address = address
+	config.Address = cfg.Address
 
 	tls := &api.TLSConfig{
-		CAPath:     tls_ca,
-		ClientCert: tls_cert,
-		ClientKey:  tls_key,
-		Insecure:   tls_insecure,
+		CAPath:     cfg.CAPath,
+		ClientCert: cfg.CertPath,
+		ClientKey:  cfg.KeyPath,
+		Insecure:   cfg.Insecure,
 	}
 
 	if err := config.ConfigureTLS(tls); err != nil {

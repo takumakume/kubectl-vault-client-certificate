@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func GetDefaultToken() (string, error) {
+func GetAuthenticatedToken() (string, error) {
 	if env := os.Getenv("VAULT_TOKEN"); env != "" {
 		return env, nil
 	}
