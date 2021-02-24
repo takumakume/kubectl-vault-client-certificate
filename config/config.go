@@ -34,7 +34,7 @@ type VaultIssuerConfig struct {
 	Name            string `yaml:"name" validate:"required"`
 	VaultServerName string `yaml:"vault_server_name" validate:"required"`
 	Path            string `yaml:"path" validate:"required"`
-	CommonName      string `yaml:"common_name" validate:"required"`
+	CommonName      string `yaml:"common_name" validate:"fqdn,required"`
 	TTL             string `yaml:"ttl" validate:"required"`
 }
 
