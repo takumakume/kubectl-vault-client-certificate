@@ -13,7 +13,7 @@ import (
 type Config struct {
 	path         string
 	VaultServers []VaultServerConfig `yaml:"vault"`
-	VaultPKIs    []VaultPKIConfig    `yaml:"vault_pki"`
+	VaultIssuers []VaultIssuerConfig `yaml:"vault_issuer"`
 }
 
 type VaultServerConfig struct {
@@ -30,7 +30,7 @@ type VaultServerTLSConfig struct {
 	SkipVerify bool   `yaml:"skip_verify,omitempty"`
 }
 
-type VaultPKIConfig struct {
+type VaultIssuerConfig struct {
 	Name            string `yaml:"name" validate:"required"`
 	VaultServerName string `yaml:"vault_server_name" validate:"required"`
 	Path            string `yaml:"path" validate:"required"`
@@ -133,23 +133,23 @@ func (cfg *Config) WriteVaultServerConfig(vaultServerConfig VaultServerConfig) e
 	return nil
 }
 
-func (cfg *Config) GetVaultPKIConfig(name string) (*VaultPKIConfig, error) {
-	for _, a := range cfg.VaultPKIs {
+func (cfg *Config) GetVaultIssuerConfig(name string) (*VaultIssuerConfig, error) {
+	for _, a := range cfg.VaultIssuers {
 		if a.Name == name {
 			return &a, nil
 		}
 	}
 
-	return nil, fmt.Errorf("'%s' vault pki was not found", name)
+	return nil, fmt.Errorf("'%s' vault issuer was not found", name)
 }
 
-func (cfg *Config) validateVaultPKIConfig(vaultPKIConfig VaultPKIConfig) error {
+func (cfg *Config) validateVaultIssuerConfig(vaultIssuerConfig VaultIssuerConfig) error {
 	v := validator.New()
-	if err := v.Struct(vaultPKIConfig); err != nil {
+	if err := v.Struct(vaultIssuerConfig); err != nil {
 		return err
 	}
 
-	_, err := cfg.GetVaultServerConfig(vaultPKIConfig.VaultServerName)
+	_, err := cfg.GetVaultServerConfig(vaultIssuerConfig.VaultServerName)
 	if err != nil {
 		return err
 	}
@@ -157,21 +157,21 @@ func (cfg *Config) validateVaultPKIConfig(vaultPKIConfig VaultPKIConfig) error {
 	return nil
 }
 
-func (cfg *Config) WriteVaultPKIConfig(vaultPKIConfig VaultPKIConfig) error {
-	if err := cfg.validateVaultPKIConfig(vaultPKIConfig); err != nil {
+func (cfg *Config) WriteVaultIssuerConfig(vaultIssuerConfig VaultIssuerConfig) error {
+	if err := cfg.validateVaultIssuerConfig(vaultIssuerConfig); err != nil {
 		return err
 	}
 
 	overwrite := false
-	for i, a := range cfg.VaultPKIs {
-		if a.Name == vaultPKIConfig.Name {
-			cfg.VaultPKIs[i] = vaultPKIConfig
+	for i, a := range cfg.VaultIssuers {
+		if a.Name == vaultIssuerConfig.Name {
+			cfg.VaultIssuers[i] = vaultIssuerConfig
 			overwrite = true
 		}
 	}
 
 	if !overwrite {
-		cfg.VaultPKIs = append(cfg.VaultPKIs, vaultPKIConfig)
+		cfg.VaultIssuers = append(cfg.VaultIssuers, vaultIssuerConfig)
 	}
 
 	if err := cfg.writeSelf(); err != nil {

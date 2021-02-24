@@ -29,32 +29,32 @@ var describeServerCmd = &cobra.Command{
 	},
 }
 
-var describePKICmd = &cobra.Command{
-	Use:   "pki",
-	Short: "pki",
-	Long:  "pki",
+var describeIssuerCmd = &cobra.Command{
+	Use:   "issuer",
+	Short: "issuer",
+	Long:  "issuer",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return errors.New("Invalid argument")
 		}
-		return describePKIList(args[0])
+		return describeIssuerList(args[0])
 	},
 }
 
 func init() {
-	describeCmd.AddCommand(describePKICmd)
+	describeCmd.AddCommand(describeIssuerCmd)
 	describeCmd.AddCommand(describeServerCmd)
 	rootCmd.AddCommand(describeCmd)
 }
 
-func describePKIList(name string) error {
+func describeIssuerList(name string) error {
 	p := printer.NewPrinter(os.Stdout, os.Stderr)
 	cfg, err := config.NewConfig(config.DefaultConfigPath())
 	if err != nil {
 		return err
 	}
 
-	c, err := cfg.GetVaultPKIConfig(name)
+	c, err := cfg.GetVaultIssuerConfig(name)
 	if err != nil {
 		return err
 	}

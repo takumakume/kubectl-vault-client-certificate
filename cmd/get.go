@@ -22,20 +22,20 @@ var getServerCmd = &cobra.Command{
 	RunE:  func(cmd *cobra.Command, args []string) error { return getServerList() },
 }
 
-var getPKICmd = &cobra.Command{
-	Use:   "pki",
-	Short: "pki",
-	Long:  "pki",
-	RunE:  func(cmd *cobra.Command, args []string) error { return getPKIList() },
+var getIssuerCmd = &cobra.Command{
+	Use:   "issuer",
+	Short: "issuer",
+	Long:  "issuer",
+	RunE:  func(cmd *cobra.Command, args []string) error { return getIssuerList() },
 }
 
 func init() {
-	getCmd.AddCommand(getPKICmd)
+	getCmd.AddCommand(getIssuerCmd)
 	getCmd.AddCommand(getServerCmd)
 	rootCmd.AddCommand(getCmd)
 }
 
-func getPKIList() error {
+func getIssuerList() error {
 	p := printer.NewPrinter(os.Stdout, os.Stderr)
 	cfg, err := config.NewConfig(config.DefaultConfigPath())
 	if err != nil {
@@ -50,7 +50,7 @@ func getPKIList() error {
 	}
 	data := [][]string{}
 
-	for _, c := range cfg.VaultPKIs {
+	for _, c := range cfg.VaultIssuers {
 		data = append(data, []string{
 			c.Name,
 			c.VaultServerName,

@@ -21,8 +21,8 @@ vault:
     ca_cert: /path/to/ca.crt
 - name: notls
   address: http://localhost:8200
-vault_pki:
-- name: pki1
+vault_issuer:
+- name: issuer1
   vault_server_name: vault1
   path: pki_int/issue/example-dot-local
   common_name: example.local
@@ -73,9 +73,9 @@ vault_pki:
 						Namespace: "",
 					},
 				},
-				VaultPKIs: []VaultPKIConfig{
+				VaultIssuers: []VaultIssuerConfig{
 					{
-						Name:            "pki1",
+						Name:            "issuer1",
 						VaultServerName: "vault1",
 						Path:            "pki_int/issue/example-dot-local",
 						CommonName:      "example.local",

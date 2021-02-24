@@ -27,19 +27,19 @@ var setContextCmd = &cobra.Command{
 }
 
 func init() {
-	setContextCmd.Flags().StringVarP(&argsContextName, "context", "c", "", "kubeconfig context name")
-	setContextCmd.Flags().StringVarP(&argsIssuerName, "issuer", "i", "", "vault-client-certificate issuer name")
+	setContextCmd.Flags().StringVarP(&argsContextName, "context", "", "", "kubeconfig context name")
+	setContextCmd.Flags().StringVarP(&argsIssuerName, "issuer", "", "", "vault-client-certificate issuer name")
 
 	rootCmd.AddCommand(setContextCmd)
 }
 
-func setContext(contextName, pkiName string) error {
+func setContext(contextName, issuerName string) error {
 	cfg, err := config.NewConfig(config.DefaultConfigPath())
 	if err != nil {
 		return err
 	}
 
-	issuerConfig, err := cfg.GetVaultPKIConfig(pkiName)
+	issuerConfig, err := cfg.GetVaultIssuerConfig(issuerName)
 	if err != nil {
 		return err
 	}

@@ -14,8 +14,13 @@ var rootCmd = &cobra.Command{
 }
 
 var (
-	argsContextName string
-	argsIssuerName  string
+	argsContextName     string
+	argsIssuerName      string
+	argsVaultServerName string
+	argsVaultAddr       string
+	argsPath            string
+	argsCommonName      string
+	argsTTL             string
 )
 
 func Execute() {
